@@ -44,6 +44,7 @@ const Nav = styled.nav`
   & > a {
     width: 350px;
     height: 150px;
+    padding-top:35px;
     @media (max-width: 768px) {
       padding: 0 5px;
     }
