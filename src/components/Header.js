@@ -80,7 +80,7 @@ const Header = (props) => {
 };
 
 const Container = styled.div`
-  background-color: white;
+  background-color: black;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   left: 0;
   padding: 0 24px;
