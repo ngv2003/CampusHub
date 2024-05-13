@@ -1,87 +1,103 @@
-import styled from 'styled-components';
+import { connect } from "react-redux";
+import styled from "styled-components";
+import { signOutAPI } from "../actions";
 const Header = (props) => {
-    return (
-        <Container>
-            <Content>
-                <Logo>
-                    <a href="/home">
-                        <img src="/images/header-logo.svg" alt="" />
-                    </a>
-                </Logo>
-                <Search>
-                    <div>
-                        <input type="text" placeholder="Search" />
-                    </div>
-                    <SearchIcon>
-                        <img src="/images/search-icon.svg" alt="" />
-                    </SearchIcon>
-                </Search>
-                <Nav>
-                    <NavListWrap>
-                        
-                        <NavList className="active">
-                            <a>
-                                <img src ='/images/nav-home.svg' alt=''/>
-                                <span>Home</span>
-                            </a>
-                        </NavList>
+  return (
+    <Container>
+      <Content>
+        <Logo>
+          <a href="/home">
+            <img src="/images/header-logo.svg" alt="" />
+          </a>
+        </Logo>
+        <Search>
+          <div>
+            <input type="text" placeholder="Search" />
+          </div>
+          <SearchIcon>
+            <img src="/images/search-icon.svg" alt="" />
+          </SearchIcon>
+        </Search>
+        <Nav>
+          <NavListWrap>
+            <NavList className="active">
+              <a>
+                <img src="/images/nav-home.svg" class="home" alt="" />
+                <span>Home</span>
+              </a>
+            </NavList>
 
-                        <NavList>
-                            <a>
-                                <img src ='/images/nav-events.svg' alt=''/>
-                                <span>Events</span>
-                            </a>
-                        </NavList>
+            <NavList>
+              <a>
+                <img src="/images/nav-events.svg" class="events" alt="" />
+                <span>Event Hub</span>
+              </a>
+            </NavList>
 
-                        <NavList>
-                            <a>
-                                <img src ='/images/nav-project-colab.svg' alt=''/>
-                                <span>Project Hub</span>
-                            </a>
-                        </NavList>
+            <NavList>
+              <a>
+                <img
+                  src="/images/nav-project-colab.svg"
+                  className="projects"
+                  alt=""
+                />
+                <span>Project Hub</span>
+              </a>
+            </NavList>
 
-                        <NavList>
-                            <a>
-                                <img src ='/images/nav-messaging.svg' alt=''/>
-                                <span>Messaging</span>
-                            </a>
-                        </NavList>
+            <NavList>
+              <a>
+                <img src="/images/nav-messaging.svg" class="messaging" alt="" />
+                <span>Messaging</span>
+              </a>
+            </NavList>
 
-                        <NavList>
-                            <a>
-                                <img src ='/images/nav-notifications.svg' alt=''/>
-                                <span>Notifications</span>
-                            </a>
-                        </NavList>
+            <NavList>
+              <a>
+                <img
+                  src="/images/nav-notifications.svg"
+                  className="notifications"
+                  alt=""
+                />
+                <span>Notifications</span>
+              </a>
+            </NavList>
 
-                        <User>
-                        <a>
-                            <img src ='/images/user.svg' alt=''/>
-                            <span>Me</span>
-                            <img src ='/images/nav-dropdown.svg' alt=''/>
-                        </a>
-                        </User>
+            <User>
+              <a>
+                {props.user && props.user.photoURL ? (
+                  <img src={props.user.photoURL} alt="" />
+                ) : (
+                  <img src="/images/user.svg" alt="" />
+                )}
+                <span>Me</span>
+                <img src="/images/nav-dropdown.svg" alt="" />
+              </a>
 
-                        <Work>
-                        <a>
-                            <img src ='/images/nav-menu.svg' alt=''/>
-                            <span>
-                                More 
-                                <img src ='/images/nav-dropdown.svg' alt=''/>
-                            </span>
-                        </a>
-                        </Work>
+              <SignOut onClick={() => props.SignOut()}>
+                <a>Sign Out</a>
+              </SignOut>
+            </User>
 
-                    </NavListWrap>
-                </Nav>
-            </Content>
-        </Container>
-    );
+            <Work>
+              <a>
+                <img src="/images/nav-menu.svg" alt="" />
+                <span>
+                  More
+                  <img src="/images/nav-dropdown.svg" alt="" />
+                </span>
+              </a>
+            </Work>
+          </NavListWrap>
+        </Nav>
+      </Content>
+    </Container>
+  );
 };
 
 const Container = styled.div`
-  background-color: black;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background-color: #98c5e9;
+  border-bottom: 3px solid #001838;
   left: 0;
   padding: 0 24px;
   position: fixed;
@@ -101,12 +117,12 @@ const Content = styled.div`
 const Logo = styled.span`
   margin-right: 8px;
   font-size: 0px;
-    & > a {
-        img {
-            height: 40px;
-            width: 40px;
-        }
+  & > a {
+    img {
+      height: 40px;
+      width: 40px;
     }
+  }
 `;
 
 const Search = styled.div`
@@ -174,7 +190,7 @@ const NavListWrap = styled.ul`
       position: absolute;
       transition: transform 0.2s ease-in-out;
       width: 100%;
-      border-color: brown;
+      border-color: #001838;
     }
   }
 `;
@@ -196,13 +212,30 @@ const NavList = styled.li`
     position: relative;
     text-decoration: none;
     img {
-            max-height: 35px;
-            max-width: 35px;
-            padding-top: 5px;
-        }
+      max-height: 35px;
+      max-width: 35px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+
+    .home {
+      max-height: 31px;
+      padding-bottom: 9px;
+    }
+
+    .projects {
+      max-height: 31px;
+      padding-bottom: 9px;
+    }
+
+    .events {
+      max-height: 36px;
+      padding-bottom: 4px;
+    }
 
     span {
-      color: brown;
+      color: #001838;
+      font-weight: bold;
       display: flex;
       align-items: center;
     }
@@ -216,10 +249,23 @@ const NavList = styled.li`
   &:active {
     a {
       span {
-        color: #CD7F32;
+        color: rgba(0, 0, 0, 0.7);
       }
     }
   }
+`;
+
+const SignOut = styled.div`
+  position: absolute;
+  top: 45px;
+  background-color: white;
+  border-radius: 0 0 5px 5px;
+  width: 100px;
+  height: 40px;
+  font-size: 16px;
+  transition-duration: 167ms;
+  text-align: center;
+  display: none;
 `;
 
 const User = styled(NavList)`
@@ -238,10 +284,27 @@ const User = styled(NavList)`
     display: flex;
     align-items: center;
   }
+
+  &:hover {
+    ${SignOut} {
+      align-items: center;
+      display: flex;
+      justify-content: center;
+    }
+  }
 `;
 
 const Work = styled(NavList)`
   border-left: 1px solid rgba(0, 0, 0, 0.08);
 `;
 
-export default Header;
+const mapStateToProps = (state) => {
+  return {
+    user: state.userState.user,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => ({
+  SignOut: () => dispatch(signOutAPI()),
+});
+export default connect(mapStateToProps, mapDispatchToProps)(Header);

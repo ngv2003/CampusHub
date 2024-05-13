@@ -15,7 +15,7 @@ const Rightside = (props) => {
               <Avatar />
             </a>
             <div>
-              <span>#Club1</span>
+              <span>#Club 1</span>
               <button>Follow</button>
             </div>
           </li>
@@ -24,23 +24,17 @@ const Rightside = (props) => {
               <Avatar />
             </a>
             <div>
-              <span>#Club2</span>
+              <span>#Club 2</span>
               <button>Follow</button>
             </div>
           </li>
         </FeedList>
 
         <Recommendation>
-          View all Clubs
+          Explore more clubs
           <img src="/images/right-icon.svg" alt="" />
         </Recommendation>
       </FollowCard>
-      <BannerCard>
-        <img
-          src="https://static-exp1.licdn.com/scds/common/u/images/promo/ads/li_evergreen_jobs_ad_300x250_v1.jpg"
-          alt=""
-        />
-      </BannerCard>
     </Container>
   );
 };
@@ -53,12 +47,13 @@ const FollowCard = styled.div`
   text-align: center;
   overflow: hidden;
   margin-bottom: 8px;
-  background-color: #fff;
+  background-color: #98c5e9;
   border-radius: 5px;
   position: relative;
   border: none;
   box-shadow: 0 0 0 1px rgb(0 0 0 / 15%), 0 0 0 rgb(0 0 0 / 20%);
   padding: 12px;
+  border: 3px solid #001838;
 `;
 
 const Title = styled.div`
@@ -85,7 +80,7 @@ const FeedList = styled.ul`
 
     button {
       background-color: transparent;
-      color: brown;
+      color: rgba(0, 0, 0, 0.6);
       box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.6);
       padding: 16px;
       align-items: center;
@@ -113,16 +108,14 @@ const Avatar = styled.div`
 `;
 
 const Recommendation = styled.a`
-  color: #0a66c2;
+  color: #001838;
   display: flex;
   align-items: center;
   font-size: 14px;
-`;
 
-const BannerCard = styled(FollowCard)`
   img {
-    width: 100%;
-    height: 100%;
+    height: 20px;
+    width: 30px;
   }
 `;
 

@@ -2,16 +2,14 @@ import styled from "styled-components";
 import Leftside from "./Leftside";
 import Main from "./Main";
 import Rightside from "./Rightside";
+import { Navigate } from "react-router-dom";
+import { connect } from "react-redux";
 
 const Home = (props) => {
   return (
     <Container>
-      <Section>
-        <h5>
-          <a>Want to be a moderator? - </a>
-        </h5>
-        <p> Contact us !</p>
-      </Section>
+      {!props.user && <Navigate to="/" />}
+      <Section></Section>
       <Layout>
         <Leftside />
         <Main />
@@ -35,7 +33,7 @@ const Section = styled.section`
   display: flex;
   justify-content: center;
   h5 {
-    color: #0a66c2;
+    color: brown;
     font-size: 14px;
     a {
       font-weight: 700;
@@ -68,4 +66,10 @@ const Layout = styled.div`
   }
 `;
 
-export default Home;
+const mapStateToProps = (state) => {
+  return {
+    user: state.userState.user,
+  };
+};
+
+export default connect(mapStateToProps)(Home);

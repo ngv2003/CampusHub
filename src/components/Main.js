@@ -1,13 +1,34 @@
+import { useState } from "react";
 import styled from "styled-components";
+import PostModal from "./PostModal";
 
 const Main = (props) => {
+  const [showModal, setShowModal] = useState("close");
+
+  const handleClick = (e) => {
+    e.preventDefault();
+    if (e.target !== e.currentTarget) {
+      return;
+    }
+
+    switch (showModal) {
+      case "open":
+        setShowModal("close");
+        break;
+      case "close":
+        setShowModal("open");
+        break;
+      default:
+        setShowModal("close");
+    }
+  };
   return (
     <Container>
       <Sharebox>
         Share
         <div>
           <img src="/images/user.svg" alt=" " />
-          <button>Start a post</button>
+          <button onClick={handleClick}>Start a post</button>
         </div>
         <div>
           <button>
@@ -87,6 +108,7 @@ const Main = (props) => {
           </SocialActions>
         </Article>
       </div>
+      <PostModal showModal={showModal} handleClick={handleClick} />
     </Container>
   );
 };
@@ -99,19 +121,19 @@ const CommonCard = styled.div`
   text-align: center;
   overflow: hidden;
   margin-bottom: 8px;
-  background-color: #fff;
+  background-color: #98c5e9;
   border-radius: 5px;
   position: relative;
   border: none;
   box-shadow: 0 0 0 1px rgb(0 0 0 / 15%), 0 0 0 rgb(0 0 0 / 20%);
+  border: 3px solid #001838;
 `;
 
 const Sharebox = styled(CommonCard)`
   display: flex;
   flex-direction: column;
-  color: #958b7b;
+  color: #fff;
   margin: 0 0 8px;
-  background: white;
 
   div {
     button {
@@ -161,7 +183,7 @@ const Sharebox = styled(CommonCard)`
         }
 
         span {
-          color: brown  ;
+          color: #001838;
         }
       }
     }
@@ -246,7 +268,7 @@ const SharedImg = styled.div`
   width: 100%;
   display: block;
   position: relative;
-  background-color: #f9fafb;
+  background-color: #98c5e9;
   img {
     object-fit: contain;
     width: 100%;
@@ -262,7 +284,7 @@ const SocialCounts = styled.ul`
   overflow: auto;
   margin: 0 16px;
   padding: 8px 0;
-  border-bottom: 1px solid #e9e5df;
+  border-bottom: 1px solid #001838;
   list-style: none;
 
   li {
@@ -290,7 +312,8 @@ const SocialActions = styled.div`
     display: inline-flex;
     align-items: center;
     padding: 8px;
-    color: brown;
+    color: #001838;
+    border: 2px solid #001838;
 
     img {
       height: 30px;
