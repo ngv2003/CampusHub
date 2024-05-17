@@ -1,5 +1,7 @@
 import { useState } from "react";
 import styled from "styled-components";
+import { connect } from "react-redux";
+import { updateUserDetailsAPI } from "../actions";
 
 const UserDetailsModal = (props) => {
   const [headline, setHeadline] = useState("");
@@ -10,11 +12,10 @@ const UserDetailsModal = (props) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Here, you can define your logic to handle the form submission, like dispatching an action to update the user details in the backend
-    // Example:
-    // props.updateUserDetails({ headline, branch, semester, links });
+    const userId = props.user.uid; // Assuming user ID is available in user object
+    const userDetails = { headline, branch, semester, links };
 
-    // After submission, you can close the modal
+    props.updateUserDetails(userId, userDetails);
     reset(e);
   };
 
@@ -44,6 +45,7 @@ const UserDetailsModal = (props) => {
                   <input
                     type="text"
                     value={headline}
+                    placeholder=""
                     onChange={(e) => setHeadline(e.target.value)}
                   />
                 </label>
@@ -51,6 +53,7 @@ const UserDetailsModal = (props) => {
                   Branch:
                   <input
                     type="text"
+                    placeholder="Enter your branch"
                     value={branch}
                     onChange={(e) => setBranch(e.target.value)}
                   />
@@ -60,6 +63,7 @@ const UserDetailsModal = (props) => {
                   <input
                     type="text"
                     value={semester}
+                    placeholder="Enter Semester"
                     onChange={(e) => setSemester(e.target.value)}
                   />
                 </label>
@@ -67,6 +71,7 @@ const UserDetailsModal = (props) => {
                   Links:
                   <input
                     type="text"
+                    placeholder="Enter Coding Profile"
                     value={links}
                     onChange={(e) => setLinks(e.target.value)}
                   />
@@ -175,4 +180,15 @@ const SubmitButton = styled.button`
   }
 `;
 
-export default UserDetailsModal;
+const mapStateToProps = (state) => {
+  return {
+    user: state.userState.user,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => ({
+  updateUserDetails: (userId, details) =>
+    dispatch(updateUserDetailsAPI(userId, details)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(UserDetailsModal);

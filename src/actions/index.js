@@ -1,7 +1,11 @@
-import { type } from "@testing-library/user-event/dist/type";
 import { auth, provider, storage } from "../firebase";
 import db from "../firebase";
-import { SET_USER, SET_LOADING_STATUS, GET_ARTICLES } from "./actionType";
+import {
+  SET_USER,
+  SET_LOADING_STATUS,
+  GET_ARTICLES,
+  SET_USER_DETAILS,
+} from "./actionType";
 
 export const setUser = (payload) => ({
   type: SET_USER,
@@ -18,12 +22,18 @@ export const setLoading = (status) => ({
   status: status,
 });
 
+export const setUserDetails = (payload) => ({
+  type: SET_USER_DETAILS,
+  payload,
+});
+
 export function signInAPI() {
   return (dispatch) => {
     auth
       .signInWithPopup(provider)
       .then((payload) => {
         dispatch(setUser(payload.user));
+        dispatch(fetchUserDetails(payload.user.email)); // Fetch user details after sign-in
       })
       .catch((error) => alert(error.message));
   };
@@ -34,6 +44,7 @@ export function getUserAuth() {
     auth.onAuthStateChanged(async (user) => {
       if (user) {
         dispatch(setUser(user));
+        dispatch(fetchUserDetails(user.email)); // Fetch user details if user is already authenticated
       }
     });
   };
@@ -119,3 +130,35 @@ export function getArticlesAPI() {
       });
   };
 }
+
+export const fetchUserDetails = (email) => {
+  return (dispatch) => {
+    db.collection("users")
+      .doc(email)
+      .get()
+      .then((doc) => {
+        if (doc.exists) {
+          dispatch(setUserDetails(doc.data()));
+        } else {
+          console.error("No such document!");
+        }
+      })
+      .catch((error) => {
+        console.error("Error getting document: ", error);
+      });
+  };
+};
+
+export const updateUserDetailsAPI = (userId, details) => {
+  return (dispatch) => {
+    db.collection("users")
+      .doc(userId)
+      .set(details, { merge: true })
+      .then(() => {
+        dispatch(setUserDetails(details));
+      })
+      .catch((error) => {
+        console.error("Error updating user details: ", error);
+      });
+  };
+};

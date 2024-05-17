@@ -1,13 +1,18 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { connect } from "react-redux";
-import UserDetailsModal from "./UserDetailsModal";
 import { Navigate } from "react-router-dom";
+import UserDetailsModal from "./UserDetailsModal";
+import { fetchUserDetails } from "../actions";
 
 const Profile = (props) => {
   const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    if (props.user) {
+      props.fetchUserDetails(props.user.email);
+    }
+  }, [props.user]);
 
   const toggleModal = () => {
     setShowModal(!showModal);
@@ -15,7 +20,7 @@ const Profile = (props) => {
 
   return (
     <Container>
-        {!props.user && <Navigate to="/" />}
+      {!props.user && <Navigate to="/" />}
       <ProfileCard>
         <div>
           {props.user && props.user.photoURL ? (
@@ -26,10 +31,10 @@ const Profile = (props) => {
           <UserInfo>
             <h2>{props.user ? props.user.displayName : "User Name"}</h2>
             <p>{props.user ? props.user.email : "user@example.com"}</p>
-            <h2>headline</h2>
-            <h3>branch</h3>
-            <h3>semester</h3>
-            <h3>Links</h3>
+            <h3>{props.userDetails.headline}</h3>
+            <h3>{props.userDetails.branch}</h3>
+            <h3>{props.userDetails.semester}</h3>
+            <h3>{props.userDetails.links}</h3>
           </UserInfo>
         </div>
         <ProfileActions>
@@ -98,6 +103,11 @@ const UserInfo = styled.div`
     margin: 5px 0;
     color: rgba(0, 0, 0, 0.6);
   }
+
+  h3 {
+    margin: 5px 0;
+    color: #001838;
+  }
 `;
 
 const ProfileActions = styled.div`
@@ -114,32 +124,15 @@ const ProfileActions = styled.div`
   }
 `;
 
-const Content = styled.div`
-  margin-top: 20px;
-`;
-
-const Section = styled.div`
-  margin-bottom: 20px;
-  padding: 20px;
-  background-color: #98c5e9;
-  border-radius: 5px;
-  text-align: left;
-
-  h3 {
-    margin: 0 0 10px 0;
-    color: #001838;
-  }
-
-  p {
-    margin: 0;
-    color: rgba(0, 0, 0, 0.9);
-  }
-`;
-
 const mapStateToProps = (state) => {
   return {
     user: state.userState.user,
+    userDetails: state.userState.userDetails,
   };
 };
 
-export default connect(mapStateToProps)(Profile);
+const mapDispatchToProps = (dispatch) => ({
+  fetchUserDetails: (email) => dispatch(fetchUserDetails(email)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Profile);

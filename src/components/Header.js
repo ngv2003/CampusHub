@@ -12,11 +12,14 @@ const Header = (props) => {
   const handleHomeClick = () => {
     navigate("/home");
   };
+  const handleCampuHubClick = () => {
+    navigate("/home");
+  };
   return (
     <Container>
       <Content>
-        <Logo>
-          <a href="/home">
+      <Logo onClick={handleCampuHubClick}>
+          <a>
             <img src="/images/header-logo.svg" alt="" />
           </a>
         </Logo>
