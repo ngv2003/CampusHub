@@ -76,7 +76,7 @@ const PostModal = (props) => {
                 <textarea
                   value={editorText}
                   onChange={(e) => setEditorText(e.target.value)}
-                  placeholder="what do you want to talk about"
+                  placeholder="what do you want to talk about?"
                   autoFocus={true}
                 />
                 {assetArea === "image" ? (
@@ -157,7 +157,7 @@ const Container = styled.div`
 const Content = styled.div`
   width: 100%;
   max-width: 552px;
-  background-color: white;
+  background-color:#98c5e9;
   max-height: 90%;
   border-radius: 5px;
   position: relative;

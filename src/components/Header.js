@@ -73,10 +73,10 @@ const Header = (props) => {
                 <span>Me</span>
                 <img src="/images/nav-dropdown.svg" alt="" />
               </a>
-
               <SignOut onClick={() => props.SignOut()}>
                 <a>Sign Out</a>
               </SignOut>
+              
             </User>
 
             <Work>
@@ -267,6 +267,7 @@ const SignOut = styled.div`
   text-align: center;
   display: none;
 `;
+
 
 const User = styled(NavList)`
   a > svg {
