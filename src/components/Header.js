@@ -1,7 +1,17 @@
 import { connect } from "react-redux";
 import styled from "styled-components";
 import { signOutAPI } from "../actions";
+import { useNavigate } from "react-router-dom";
+
 const Header = (props) => {
+  const navigate = useNavigate();
+
+  const handleProfileClick = () => {
+    navigate("/profile");
+  };
+  const handleHomeClick = () => {
+    navigate("/home");
+  };
   return (
     <Container>
       <Content>
@@ -20,7 +30,7 @@ const Header = (props) => {
         </Search>
         <Nav>
           <NavListWrap>
-            <NavList className="active">
+            <NavList onClick={handleHomeClick} className="active">
               <a>
                 <img src="/images/nav-home.svg" class="home" alt="" />
                 <span>Home</span>
@@ -73,6 +83,9 @@ const Header = (props) => {
                 <span>Me</span>
                 <img src="/images/nav-dropdown.svg" alt="" />
               </a>
+              <Profile onClick={handleProfileClick}>
+                <a>View Profile</a>
+              </Profile>
               <SignOut onClick={() => props.SignOut()}>
                 <a>Sign Out</a>
               </SignOut>
@@ -257,15 +270,27 @@ const NavList = styled.li`
 
 const SignOut = styled.div`
   position: absolute;
-  top: 45px;
+  top: 86px;
   background-color: white;
-  border-radius: 0 0 5px 5px;
   width: 100px;
   height: 40px;
   font-size: 16px;
   transition-duration: 167ms;
   text-align: center;
   display: none;
+`;
+
+const Profile = styled.div`
+  position: absolute;
+  top: 45px; /* Adjusted to be above SignOut */
+  background-color: white;
+  width: 100px;
+  height: 40px;
+  font-size: 16px;
+  transition-duration: 167ms;
+  text-align: center;
+  display: none;
+  border-bottom:1px solid rgba(0,0,0,0.5);
 `;
 
 
@@ -288,6 +313,11 @@ const User = styled(NavList)`
 
   &:hover {
     ${SignOut} {
+      align-items: center;
+      display: flex;
+      justify-content: center;
+    }
+    ${Profile} {
       align-items: center;
       display: flex;
       justify-content: center;

@@ -3,6 +3,7 @@ import './App.css';
 import Header from './components/Header';
 import Home from './components/Home';
 import Login from './components/Login';
+import Profile from './components/Profile';
 
 function App() {
   return (
@@ -14,6 +15,15 @@ function App() {
             <>
               <Header/>
               <Home/>
+              
+            </>
+          }
+          />
+          <Route path="/Profile" element={
+            <>
+              <Header/>
+              <Profile/>
+              
             </>
           }
           />
