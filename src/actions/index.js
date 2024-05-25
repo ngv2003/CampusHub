@@ -149,10 +149,10 @@ export const fetchUserDetails = (email) => {
   };
 };
 
-export const updateUserDetailsAPI = (userId, details) => {
+export const updateUserDetailsAPI = (email, details) => {
   return (dispatch) => {
     db.collection("users")
-      .doc(userId)
+      .doc(email)
       .set(details, { merge: true })
       .then(() => {
         dispatch(setUserDetails(details));
