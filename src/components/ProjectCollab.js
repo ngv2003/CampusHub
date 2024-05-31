@@ -1,10 +1,16 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { connect } from "react-redux";
-import { getProjectsAPI, addProjectAPI, deleteProjectAPI, updateProjectAPI } from "../actions";
+import {
+  getProjectsAPI,
+  addProjectAPI,
+  deleteProjectAPI,
+  updateProjectAPI,
+} from "../actions";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { Navigate } from "react-router-dom";
+import Modal from "./Modal"; // Adjust the path as necessary
 
 const ProjectCollab = (props) => {
   const [showProjectForm, setShowProjectForm] = useState(false);
@@ -42,6 +48,9 @@ const ProjectCollab = (props) => {
 
   const handleProjectSubmit = () => {
     const projectData = {
+      userName: props.user.displayName,
+      profilePic: props.user.photoURL,
+      email: props.user.email,
       name: projectName,
       description: projectDescription,
       roles: projectRoles,
@@ -55,12 +64,7 @@ const ProjectCollab = (props) => {
       props.addProject(projectData);
     }
 
-    setProjectName("");
-    setProjectDescription("");
-    setProjectRoles([{ name: "", role: "" }]);
-    setShowProjectForm(false);
-    setIsEditing(false);
-    setEditingProjectId(null);
+    resetForm();
   };
 
   const handleEditProject = (project) => {
@@ -76,6 +80,23 @@ const ProjectCollab = (props) => {
     props.deleteProject(projectId);
   };
 
+  const resetForm = () => {
+    setProjectName("");
+    setProjectDescription("");
+    setProjectRoles([{ name: "", role: "" }]);
+    setShowProjectForm(false);
+    setIsEditing(false);
+    setEditingProjectId(null);
+  };
+
+  const toggleProjectForm = () => {
+    if (showProjectForm) {
+      resetForm();
+    } else {
+      setShowProjectForm(true);
+    }
+  };
+
   if (!props.user) {
     return <Navigate to="/" />;
   }
@@ -83,10 +104,10 @@ const ProjectCollab = (props) => {
   return (
     <Container>
       <ProjectBox>
-        <button onClick={() => setShowProjectForm(!showProjectForm)}>
-          {isEditing ? "Edit Project" : "Start a Project"}
+        <button onClick={toggleProjectForm}>
+          Create Project
         </button>
-        {showProjectForm && (
+        <Modal show={showProjectForm} onClose={resetForm}>
           <ProjectForm>
             <input
               type="text"
@@ -122,8 +143,9 @@ const ProjectCollab = (props) => {
             ))}
             <button onClick={handleAddRole}>Add Role</button>
             <button onClick={handleProjectSubmit}>Submit</button>
+            <button onClick={resetForm}>Cancel</button>
           </ProjectForm>
-        )}
+        </Modal>
       </ProjectBox>
       {props.projects.length === 0 ? (
         <p>There are no projects</p>
@@ -134,6 +156,11 @@ const ProjectCollab = (props) => {
             .map((project, key) => (
               <Project key={key}>
                 <ProjectDetails>
+                  <span onClick={() => handleUserClick(project.email)}>
+                    <p>{project.userName}</p>
+                    <img src={project.profilePic} />
+                  </span>
+
                   <h3>{project.name}</h3>
                   <p>{project.description}</p>
                   <p>{formatDistanceToNow(new Date(project.timestamp))} ago</p>
@@ -277,7 +304,8 @@ const mapDispatchToProps = (dispatch) => ({
   getProjects: () => dispatch(getProjectsAPI()),
   addProject: (projectData) => dispatch(addProjectAPI(projectData)),
   deleteProject: (projectId) => dispatch(deleteProjectAPI(projectId)),
-  updateProject: (projectId, projectData) => dispatch(updateProjectAPI(projectId, projectData)),
+  updateProject: (projectId, projectData) =>
+    dispatch(updateProjectAPI(projectId, projectData)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ProjectCollab);

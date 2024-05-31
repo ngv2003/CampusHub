@@ -1,5 +1,6 @@
 import { auth, provider, storage } from "../firebase";
 import db from "../firebase";
+import firebase from "firebase/app"
 import {
   SET_USER,
   SET_LOADING_STATUS,
@@ -12,6 +13,11 @@ import {
   ADD_PROJECT_MEMBER,
   DELETE_PROJECT,
   UPDATE_PROJECT,
+  SET_CERTIFICATES,
+  ADD_SKILL,
+  DELETE_SKILL,
+  GET_EVENTS, 
+  ADD_EVENT, DELETE_EVENT, UPDATE_EVENT
 } from "./actionType";
 
 export const setUser = (payload) => ({
@@ -73,6 +79,31 @@ export const updateProject = (projectId, projectData) => ({
   projectData,
 });
 
+export const setCertificates = (certificates) => ({
+  type: SET_CERTIFICATES,
+  certificates,
+});
+
+export const getEvents = (payload) => ({
+  type: GET_EVENTS,
+  events: payload,
+});
+
+export const addEvent = (payload) => ({
+  type: ADD_EVENT,
+  event: payload,
+});
+
+export const deleteEvent = (eventId) => ({
+  type: DELETE_EVENT,
+  eventId,
+});
+
+export const updateEvent = (eventId, eventData) => ({
+  type: UPDATE_EVENT,
+  eventId,
+  eventData,
+});
 
 export function signInAPI() {
   return (dispatch) => {
@@ -428,5 +459,163 @@ export const updateProjectAPI = (projectId, projectData) => {
     } catch (error) {
       console.error("Error updating project: ", error);
     }
+  };
+};
+
+export const uploadCertificates = (email, files) => {
+  return async (dispatch) => {
+    const storageRef = storage.ref();
+    const userRef = db.collection("users").doc(email);
+    const newCertificates = [];
+
+    for (const file of files) {
+      const fileRef = storageRef.child(`certificates/${email}/${file.name}`);
+      await fileRef.put(file);
+      const fileUrl = await fileRef.getDownloadURL();
+      newCertificates.push({ name: file.name, url: fileUrl });
+    }
+
+    userRef.update({
+      certificates: firebase.firestore.FieldValue.arrayUnion(...newCertificates)
+    }).then(() => {
+      dispatch(fetchUserDetails(email));
+    }).catch((error) => {
+      console.error("Error uploading certificates: ", error);
+    });
+  };
+};
+
+export const deleteCertificate = (email, certificate) => {
+  return async (dispatch) => {
+    try {
+      const userRef = db.collection("users").doc(email);
+      const certificateRef = storage.refFromURL(certificate.url);
+
+      await certificateRef.delete();
+
+      userRef.update({
+        certificates: firebase.firestore.FieldValue.arrayRemove(certificate)
+      }).then(() => {
+        dispatch(fetchUserDetails(email));
+      }).catch((error) => {
+        console.error("Error deleting certificate: ", error);
+      });
+    } catch (error) {
+      console.error("Error deleting certificate: ", error);
+    }
+  };
+};
+
+export const addSkill = (email, skill) => {
+  return async (dispatch) => {
+    try {
+      const userRef = db.collection("users").doc(email);
+      await userRef.update({
+        skills: firebase.firestore.FieldValue.arrayUnion(skill)
+      });
+      dispatch(fetchUserDetails(email));
+    } catch (error) {
+      console.error("Error adding skill: ", error);
+    }
+  };
+};
+
+export const deleteSkill = (email, skill) => {
+  return async (dispatch) => {
+    try {
+      const userRef = db.collection("users").doc(email);
+      await userRef.update({
+        skills: firebase.firestore.FieldValue.arrayRemove(skill)
+      });
+      dispatch(fetchUserDetails(email));
+    } catch (error) {
+      console.error("Error deleting skill: ", error);
+    }
+  };
+};
+
+export const getEventsAPI = () => {
+  return (dispatch) => {
+    db.collection("events")
+      .orderBy("timestamp", "desc")
+      .onSnapshot((snapshot) => {
+        const payload = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        dispatch(getEvents(payload));
+      });
+  };
+};
+
+export const addEventAPI = (eventData) => {
+  return async (dispatch) => {
+    dispatch(setLoading(true));
+
+    try {
+      const posterURL = eventData.poster ? await uploadFile(eventData.poster, 'event-posters') : "";
+      const brochureURL = eventData.brochure ? await uploadFile(eventData.brochure, 'event-brochures') : "";
+
+      const eventDataWithURLs = {
+        ...eventData,
+        poster: posterURL,
+        brochure: brochureURL,
+      };
+
+      await db.collection("events").add(eventDataWithURLs);
+      dispatch(addEvent(eventDataWithURLs));
+    } catch (error) {
+      console.error("Error adding event: ", error);
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+};
+
+export const updateEventAPI = (eventId, eventData) => {
+  return async (dispatch) => {
+    try {
+      const posterURL = eventData.poster && typeof eventData.poster !== "string" ? await uploadFile(eventData.poster, 'event-posters') : eventData.poster;
+      const brochureURL = eventData.brochure && typeof eventData.brochure !== "string" ? await uploadFile(eventData.brochure, 'event-brochures') : eventData.brochure;
+
+      const eventDataWithURLs = {
+        ...eventData,
+        poster: posterURL,
+        brochure: brochureURL,
+      };
+
+      await db.collection("events").doc(eventId).update(eventDataWithURLs);
+      dispatch(updateEvent(eventId, eventDataWithURLs));
+    } catch (error) {
+      console.error("Error updating event: ", error);
+    }
+  };
+};
+
+const uploadFile = (file, path) => {
+  return new Promise((resolve, reject) => {
+    const uploadTask = storage.ref(`${path}/${file.name}`).put(file);
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        
+      },
+      (error) => {
+        reject(error);
+      },
+      () => {
+        uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+          resolve(downloadURL);
+        });
+      }
+    );
+  });
+};
+
+export const deleteEventAPI = (eventId) => {
+  return (dispatch) => {
+    db.collection("events").doc(eventId).delete()
+      .then(() => dispatch(deleteEvent(eventId)))
+      .catch((error) => console.error("Error deleting event: ", error));
   };
 };

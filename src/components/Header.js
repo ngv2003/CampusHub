@@ -15,13 +15,22 @@ const Header = (props) => {
   const handleCampuHubClick = () => {
     navigate("/home");
   };
-  const handleProjectCollabClick = () => {
-    navigate("/projectcollab");
+
+  const handleProjectClick = () => {
+    navigate("/procollab")
+  }
+
+  const handleEventClick = () => {
+    navigate("/events")
+  }
+  const handleMessageClick = () => {
+    navigate("/message");
   };
+
   return (
     <Container>
       <Content>
-      <Logo onClick={handleCampuHubClick}>
+        <Logo onClick={handleCampuHubClick}>
           <a>
             <img src="/images/header-logo.svg" alt="" />
           </a>
@@ -43,14 +52,14 @@ const Header = (props) => {
               </a>
             </NavList>
 
-            <NavList>
+            <NavList onClick={handleEventClick}>
               <a>
                 <img src="/images/nav-events.svg" class="events" alt="" />
                 <span>Event Hub</span>
               </a>
             </NavList>
 
-            <NavList onClick={handleProjectCollabClick} className="projectcollab" alt="">
+            <NavList  onClick={handleProjectClick}>
               <a>
                 <img
                   src="/images/nav-project-colab.svg"
@@ -61,7 +70,7 @@ const Header = (props) => {
               </a>
             </NavList>
 
-            <NavList>
+            <NavList onClick={handleMessageClick}>
               <a>
                 <img src="/images/nav-messaging.svg" class="messaging" alt="" />
                 <span>Messaging</span>
@@ -95,7 +104,6 @@ const Header = (props) => {
               <SignOut onClick={() => props.SignOut()}>
                 <a>Sign Out</a>
               </SignOut>
-              
             </User>
 
             <Work>
@@ -276,8 +284,9 @@ const NavList = styled.li`
 
 const SignOut = styled.div`
   position: absolute;
-  top: 86px;
+  top: 85px;
   background-color: white;
+
   width: 100px;
   height: 40px;
   font-size: 16px;
@@ -290,15 +299,14 @@ const Profile = styled.div`
   position: absolute;
   top: 45px; /* Adjusted to be above SignOut */
   background-color: white;
+  border-top: 4px black;
   width: 100px;
   height: 40px;
   font-size: 16px;
   transition-duration: 167ms;
   text-align: center;
   display: none;
-  border-bottom:1px solid rgba(0,0,0,0.5);
 `;
-
 
 const User = styled(NavList)`
   a > svg {

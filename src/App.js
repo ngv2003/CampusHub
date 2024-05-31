@@ -6,6 +6,8 @@ import Login from "./components/Login";
 import Profile from "./components/Profile";
 import ProjectCollab from "./components/ProjectCollab";
 import OtherUserProfile from "./components/OtherUserProfile";
+import EventCollab from "./components/EventCollab";
+import Message from "./components/Message";
 
 function App() {
   return (
@@ -33,11 +35,30 @@ function App() {
           />
 
           <Route
-            path="/projectcollab"
+            path="/Procollab"
             element={
               <>
                 <Header />
                 <ProjectCollab/>
+              </>
+            }
+          />
+
+          <Route
+            path="/events"
+            element={
+              <>
+                <Header />
+                <EventCollab/>
+              </>
+            }
+          />
+          <Route
+            path="/message"
+            element={
+              <>
+                <Header />
+                <Message/>
               </>
             }
           />
