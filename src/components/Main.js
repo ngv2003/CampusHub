@@ -17,6 +17,12 @@ const Main = (props) => {
     props.getArticles();
   }, []);
 
+  useEffect(() => {
+    if (props.querySearch) {
+      props.searchUsers(props.querySearch);
+    }
+  }, [props.querySearch]);
+
   const handleClick = (e) => {
     e.preventDefault();
     if (e.target !== e.currentTarget) {
@@ -59,6 +65,21 @@ const Main = (props) => {
   const handleDelete = (articleId) => {
     props.deleteArticle(articleId);
   };
+
+  const handleShare = (article) => {
+    if (navigator.share) {
+      navigator.share({
+        title: article.title,
+        text: article.description,
+        url: window.location.href, 
+      })
+      .then(() => console.log('Article shared successfully'))
+      .catch((error) => console.error('Error sharing article:', error));
+    } else {
+      alert('Web Share API is not supported in your browser.');
+    }
+  };
+  
 
   return (
     <>
@@ -120,10 +141,11 @@ const Main = (props) => {
                         </span>
                       </div>
                     </a>
-                    <button  onClick={() => handleDropdown(article.id)}>
+                    <button onClick={() => handleDropdown(article.id)}>
                       <img src="/images/ellipsis.svg" alt="" />
                     </button>
                     {dropdownOpen === article.id && (
+                      
                       <DropdownMenu>
                         <DropdownItem
                           onClick={() => handleDelete(article.id)}
@@ -132,6 +154,7 @@ const Main = (props) => {
                           Delete
                         </DropdownItem>
                       </DropdownMenu>
+                      
                     )}
                   </SharedActor>
                   <Description>{article.description}</Description>
@@ -167,7 +190,7 @@ const Main = (props) => {
                       <span>Comment</span>
                     </button>
 
-                    <button>
+                    <button onClick={() => handleShare(article)}>
                       <img src="/images/share-icon.svg" alt="" />
                       <span>Share</span>
                     </button>
@@ -340,7 +363,9 @@ const SharedActor = styled.div`
     }
   }
   button {
-    position: relative;
+    position: absolute;
+    right: 12px;
+    top: 0;
     background: transparent;
     border: none;
     outline: none;
@@ -352,10 +377,8 @@ const SharedActor = styled.div`
 `;
 
 const DropdownMenu = styled.div`
-cursor: pointer;
-margin-top:20px;
   position: absolute;
-  right: 0px;
+  right: 10px;
   top: 30px;
   background: white;
   border: 1px solid #ccc;
@@ -365,11 +388,10 @@ margin-top:20px;
 `;
 
 const DropdownItem = styled.button`
-  cursor: pointer;
   display: block;
   padding: 10px 20px;
-  background: transparent;
-  border: none;
+  background: white;
+  border: 3px solid  #001838;
   text-align: left;
   width: 100%;
   &:hover {
@@ -380,6 +402,7 @@ const DropdownItem = styled.button`
     cursor: not-allowed;
   }
 `;
+
 
 const Description = styled.div`
   padding: 0 16px;
@@ -537,6 +560,8 @@ const mapStateToProps = (state) => {
     loading: state.articleState.loading,
     user: state.userState.user,
     articles: state.articleState.articles,
+    searchQuery: state.searchState.searchQuery,
+    searchResults: state.searchState.searchResults,
   };
 };
 
@@ -546,7 +571,7 @@ const mapDispatchToProps = (dispatch) => ({
     dispatch(updateArticleLikes(articleId, userEmail)),
   addComment: (articleId, comment, userEmail, userImage) =>
     dispatch(addCommentAPI(articleId, comment, userEmail, userImage)),
-  deleteArticle: (articleId) => dispatch(deleteArticleAPI(articleId)), // Add the delete action
+  deleteArticle: (articleId) => dispatch(deleteArticleAPI(articleId)), 
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Main);

@@ -101,6 +101,10 @@ const ProjectCollab = (props) => {
     return <Navigate to="/" />;
   }
 
+  const filteredProjects = props.projects.filter((project) =>
+    project.name.toLowerCase().includes(props.searchQuery.toLowerCase())
+  );
+
   return (
     <Container>
       <ProjectBox>
@@ -147,11 +151,12 @@ const ProjectCollab = (props) => {
           </ProjectForm>
         </Modal>
       </ProjectBox>
-      {props.projects.length === 0 ? (
+      {filteredProjects.length === 0 ? (
         <p>There are no projects</p>
       ) : (
         <Content>
-          {props.projects
+          {props.loading && <img src="/images/spin-loader.svg" className=".loading" />}
+          {filteredProjects
             .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
             .map((project, key) => (
               <Project key={key}>
@@ -249,6 +254,10 @@ const RoleInput = styled.div`
 
 const Content = styled.div`
   text-align: center;
+  .loading{
+    height: 30px;
+    width: 30px;
+  }
 `;
 
 const Project = styled.div`
@@ -297,6 +306,7 @@ const mapStateToProps = (state) => {
     loading: state.projectState.loading,
     user: state.userState.user,
     projects: state.projectState.projects,
+    searchQuery: state.searchState.searchQuery,
   };
 };
 
