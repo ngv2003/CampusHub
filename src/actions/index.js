@@ -21,6 +21,8 @@ import {
   DELETE_EVENT,
   UPDATE_EVENT,
   SET_SEARCH_QUERY,
+  ERROR,
+  UPDATE_EVENT_INTEREST,
 } from "./actionType";
 
 export const setUser = (payload) => ({
@@ -111,6 +113,12 @@ export const setSearchQuery = (query) => ({
   type: SET_SEARCH_QUERY,
   query,
 });
+
+export const updateEventInterest = (eventId, updatedEvent) => ({
+  type: UPDATE_EVENT_INTEREST,
+  payload: { eventId, updatedEvent },
+});
+
 
 
 export function signInAPI() {
@@ -318,33 +326,47 @@ export const fetchUserDetails = (email) => {
   };
 };
 
-export const updateUserDetailsAPI = (
-  email,
-  profilePicture,
-  username,
-  details
-) => {
+export const updateUserDetailsAPI = (email, profilePicture, username, details) => {
   return (dispatch) => {
-    const userDetails = { ...details, profilePicture, username };
+    const userRef = db.collection("users").doc(email);
 
-    db.collection("users")
-      .doc(email)
-      .set(userDetails, { merge: true })
-      .then(() => {
-        dispatch(setUserDetails(userDetails));
-      })
-      .catch((error) => {
-        console.error("Error updating user details: ", error);
-      });
+    
+    userRef.get().then((doc) => {
+      if (doc.exists) {
+        const existingDetails = doc.data();
+
+        
+        const userDetails = { 
+          ...details, 
+          profilePicture, 
+          username,
+          skills: existingDetails.skills || []  
+        };
+
+        
+        userRef.set(userDetails, { merge: true })
+          .then(() => {
+            dispatch(setUserDetails(userDetails));
+          })
+          .catch((error) => {
+            console.error("Error updating user details: ", error);
+          });
+      } else {
+        console.error("No such document!");
+      }
+    }).catch((error) => {
+      console.error("Error getting document: ", error);
+    });
   };
 };
+
 
 export const fetchUserDetailsByEmail = (email) => {
   return async (dispatch) => {
     try {
       let userDetails = {};
 
-      // Fetch user details from the "users" collection
+     
       await db
         .collection("users")
         .doc(email)
@@ -375,7 +397,7 @@ export const addCommentAPI = (articleId, comment, userEmail, userImage) => {
       const userDoc = await userRef.get();
       if (userDoc.exists) {
         const userData = userDoc.data();
-        const username = userData.username || userEmail; // Fallback to email if username doesn't exist
+        const username = userData.username || userEmail; 
 
         const articleRef = db.collection("articles").doc(articleId);
 
@@ -561,99 +583,90 @@ export const deleteSkill = (email, skill) => {
   };
 };
 
-export const addEventAPI = (eventData) => {
-  return async (dispatch) => {
-    dispatch(setLoading(true));
+export const getEventsAPI = () => async (dispatch) => {
+  try {
+    const snapshot = await db.collection("events").get();
+    const events = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    dispatch({ type: GET_EVENTS, payload: events });
+  } catch (error) {
+    dispatch({ type: ERROR, error: error.message });
+  }
+};
 
-    try {
-      const posterURL = eventData.poster
-        ? await uploadFile(eventData.poster, "event-posters")
-        : "";
-      const brochureURL = eventData.brochure
-        ? await uploadFile(eventData.brochure, "event-brochures")
-        : "";
-
-      const eventDataWithURLs = {
-        ...eventData,
-        poster: posterURL,
-        brochure: brochureURL,
-      };
-
-      await db.collection("events").add(eventDataWithURLs);
-      dispatch(addEvent(eventDataWithURLs));
-    } catch (error) {
-      console.error("Error adding event: ", error);
-    } finally {
-      dispatch(setLoading(false));
+// Add event
+export const addEventAPI = (eventData) => async (dispatch) => {
+  try {
+    if (eventData.poster instanceof File) {
+      eventData.poster = await uploadFile(eventData.poster);
     }
-  };
-};
-
-export const updateEventAPI = (eventId, eventData) => {
-  return async (dispatch) => {
-    try {
-      const posterURL =
-        eventData.poster && typeof eventData.poster !== "string"
-          ? await uploadFile(eventData.poster, "event-posters")
-          : eventData.poster;
-      const brochureURL =
-        eventData.brochure && typeof eventData.brochure !== "string"
-          ? await uploadFile(eventData.brochure, "event-brochures")
-          : eventData.brochure;
-
-      const eventDataWithURLs = {
-        ...eventData,
-        poster: posterURL,
-        brochure: brochureURL,
-      };
-
-      await db.collection("events").doc(eventId).update(eventDataWithURLs);
-      dispatch(updateEvent(eventId, eventDataWithURLs));
-    } catch (error) {
-      console.error("Error updating event: ", error);
+    if (eventData.brochure instanceof File) {
+      eventData.brochure = await uploadFile(eventData.brochure);
     }
-  };
-};
 
-const uploadFile = (file, path) => {
-  return new Promise((resolve, reject) => {
-    const uploadTask = storage.ref(`${path}/${file.name}`).put(file);
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {},
-      (error) => {
-        reject(error);
-      },
-      () => {
-        uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-          resolve(downloadURL);
-        });
-      }
-    );
-  });
-};
-
-export const deleteEventAPI = (eventId) => {
-  return (dispatch) => {
-    db.collection("events")
-      .doc(eventId)
-      .delete()
-      .then(() => dispatch(deleteEvent(eventId)))
-      .catch((error) => console.error("Error deleting event: ", error));
-  };
-};
-
-export const getEventsAPI = () => {
-  return (dispatch) => {
-    db.collection("events").onSnapshot((snapshot) => {
-      const events = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      dispatch({
-        type: GET_EVENTS,
-        events,
-      });
+    const newEvent = await db.collection("events").add(eventData);
+    dispatch({
+      type: ADD_EVENT,
+      payload: { id: newEvent.id, ...eventData },
     });
+  } catch (error) {
+    dispatch({ type: ERROR, error: error.message });
+  }
+};
+
+// Update event
+export const updateEventAPI = (eventId, eventData) => async (dispatch) => {
+  try {
+    if (eventData.poster instanceof File) {
+      eventData.poster = await uploadFile(eventData.poster);
+    }
+    if (eventData.brochure instanceof File) {
+      eventData.brochure = await uploadFile(eventData.brochure);
+    }
+
+    await db.collection("events").doc(eventId).update(eventData);
+    dispatch({
+      type: UPDATE_EVENT,
+      payload: { id: eventId, ...eventData },
+    });
+  } catch (error) {
+    dispatch({ type: ERROR, error: error.message });
+  }
+};
+
+export const deleteEventAPI = (eventId) => async (dispatch) => {
+  try {
+    await db.collection("events").doc(eventId).delete();
+    dispatch({ type: DELETE_EVENT, payload: eventId });
+  } catch (error) {
+    dispatch({ type: ERROR, error: error.message });
+  }
+};
+export const updateInterestedAPI = (eventId, userEmail) => {
+  return async (dispatch) => {
+    try {
+      const eventDoc = await db.collection("events").doc(eventId).get();
+      if (eventDoc.exists) {
+        const eventData = eventDoc.data();
+        if (!eventData.interestedUsers.includes(userEmail)) {
+          const updatedInterestedCount = (eventData.interested ?? 0) + 1;
+          const updatedInterestedUsers = [
+            ...eventData.interestedUsers,
+            userEmail,
+          ];
+
+          await db.collection("events").doc(eventId).update({
+            interested: updatedInterestedCount,
+            interestedUsers: updatedInterestedUsers,
+          });
+
+          dispatch(getEventsAPI());
+        }
+      }
+    } catch (error) {
+      console.error("Error updating interested count: ", error);
+    }
   };
 };

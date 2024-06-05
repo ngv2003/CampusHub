@@ -1,35 +1,31 @@
-import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import { useDispatch, useSelector } from 'react-redux';
-import { getEventsAPI } from '../actions';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import styled from "styled-components";
+import { getEventsAPI } from "../actions";
+import { useNavigate } from "react-router-dom";
+import { connect } from "react-redux";
 
 const Rightside = (props) => {
-  const dispatch = useDispatch();
-  const events = useSelector((state) => state.eventState.events);
   const navigate = useNavigate();
   const [todayEvents, setTodayEvents] = useState([]);
 
   useEffect(() => {
-    dispatch(getEventsAPI());
-  }, [dispatch]);
+    if (props.user) {
+      props.getEvents();
+    }
+  }, [props.user, props.getEvents]);
 
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0]; 
-    console.log("Today's date:", today);
-    console.log("Fetched events:", events);
-    const filteredEvents = events.filter(event => {
-      const eventDate = new Date(event.date).toISOString().split('T')[0];
-      console.log("Event date:", eventDate);
+    const today = new Date().toISOString().split("T")[0];
+    const filteredEvents = props.events.filter((event) => {
+      const eventDate = new Date(event.date).toISOString().split("T")[0];
       return eventDate === today;
     });
-    console.log("Filtered events for today:", filteredEvents);
     setTodayEvents(filteredEvents);
-  }, [events]);
+  }, [props.events]);
 
   const handleExploreEventClick = () => {
-    navigate('/events')
-  }
+    navigate("/events");
+  };
 
   return (
     <Container>
@@ -40,13 +36,13 @@ const Rightside = (props) => {
         </Title>
         <FeedList>
           {todayEvents.length > 0 ? (
-            todayEvents.map(event => (
+            todayEvents.map((event) => (
               <li key={event.id}>
                 <EventItem>
                   <Avatar />
                   <EventInfo>
-                    <span>{event.name}</span>
-                    <span>{event.time}</span>
+                    <EventName>{event.name}</EventName>
+                    <EventTime>{event.time}</EventTime>
                   </EventInfo>
                 </EventItem>
               </li>
@@ -57,7 +53,11 @@ const Rightside = (props) => {
         </FeedList>
         <Recommendation onClick={handleExploreEventClick}>
           Explore more events
-          <img src="/images/right-icon.svg" alt="" onClick={handleExploreEventClick} />
+          <img
+            src="/images/right-icon.svg"
+            alt=""
+            onClick={handleExploreEventClick}
+          />
         </Recommendation>
       </FollowCard>
     </Container>
@@ -87,7 +87,7 @@ const Title = styled.div`
   justify-content: space-between;
   font-size: 16px;
   width: 100%;
-  color: rgba(0, 0, 0, 0.6);
+  color:black;
 `;
 
 const FeedList = styled.ul`
@@ -109,8 +109,17 @@ const EventItem = styled.div`
 const EventInfo = styled.div`
   display: flex;
   flex-direction: column;
-  margin-left: 5px;
+  margin-left: 10px; 
   margin-bottom: 10px;
+  align-items: flex-start; 
+`;
+
+const EventName = styled.span`
+  font-weight: bold;
+`;
+
+const EventTime = styled.span`
+  color: rgba(0, 0, 0, 0.6);
 `;
 
 const Avatar = styled.div`
@@ -120,7 +129,7 @@ const Avatar = styled.div`
   background-repeat: no-repeat;
   width: 40px;
   height: 40px;
-  margin-right: 8px;
+  margin-right: 10px; 
 `;
 
 const Recommendation = styled.a`
@@ -128,11 +137,22 @@ const Recommendation = styled.a`
   display: flex;
   align-items: center;
   font-size: 14px;
-
+  cursor: pointer;
   img {
     height: 20px;
     width: 30px;
   }
 `;
 
-export default Rightside;
+const mapStateToProps = (state) => {
+  return {
+    events: state.eventState.events,
+    user: state.userState.user, // Add this to ensure user is properly passed
+  };
+};
+
+const mapDispatchToProps = (dispatch) => ({
+  getEvents: () => dispatch(getEventsAPI()),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Rightside);

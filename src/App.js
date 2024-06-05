@@ -8,6 +8,7 @@ import ProjectCollab from "./components/ProjectCollab";
 import OtherUserProfile from "./components/OtherUserProfile";
 import EventCollab from "./components/EventCollab";
 import Message from "./components/Message";
+import NotificationsList from "./components/NotificationsList";
 
 function App() {
   return (
@@ -69,6 +70,15 @@ function App() {
               <>
                 <Header />
                 <OtherUserProfile/>
+              </>
+            }
+          />
+          <Route
+            path="/notification"
+            element={
+              <>
+                <Header />
+                <NotificationsList/>
               </>
             }
           />

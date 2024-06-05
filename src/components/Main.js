@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import PostModal from "./PostModal";
 import { connect } from "react-redux";
-import { getArticlesAPI, updateArticleLikes, addCommentAPI, deleteArticleAPI } from "../actions"; // Import the new action
+import { getArticlesAPI, updateArticleLikes, addCommentAPI, deleteArticleAPI } from "../actions"; 
 import ReactPlayer from "react-player";
 import { useNavigate } from "react-router-dom";
 
@@ -10,7 +10,6 @@ const Main = (props) => {
   const [showModal, setShowModal] = useState("close");
   const [commentText, setCommentText] = useState("");
   const [expandedArticleId, setExpandedArticleId] = useState(null);
-  const [dropdownOpen, setDropdownOpen] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,21 +45,24 @@ const Main = (props) => {
   };
 
   const handleLike = (articleId) => {
-    props.updateArticleLikes(articleId, props.user.email);
+    if (props.user && props.user.email) {
+      props.updateArticleLikes(articleId, props.user.email);
+    }
   };
+  
 
   const handleCommentSubmit = (articleId) => {
-    props.addComment(articleId, commentText, props.user.email, props.user.photoURL);
-    setCommentText("");
+    if (props.user && props.user.email) {
+      props.addComment(articleId, commentText, props.user.email, props.user.photoURL);
+      setCommentText("");
+    }
   };
+  
   
   const toggleComments = (articleId) => {
     setExpandedArticleId(expandedArticleId === articleId ? null : articleId);
   };
 
-  const handleDropdown = (articleId) => {
-    setDropdownOpen(dropdownOpen === articleId ? null : articleId);
-  };
 
   const handleDelete = (articleId) => {
     props.deleteArticle(articleId);
@@ -110,11 +112,6 @@ const Main = (props) => {
             </button>
 
             <button>
-              <img src="/images/post-event-icon.svg" alt="" />
-              <span>Event</span>
-            </button>
-
-            <button>
               <img src="/images/post-article-icon.svg" alt="" />
               <span>Article</span>
             </button>
@@ -141,21 +138,13 @@ const Main = (props) => {
                         </span>
                       </div>
                     </a>
-                    <button onClick={() => handleDropdown(article.id)}>
-                      <img src="/images/ellipsis.svg" alt="" />
-                    </button>
-                    {dropdownOpen === article.id && (
-                      
-                      <DropdownMenu>
-                        <DropdownItem
-                          onClick={() => handleDelete(article.id)}
-                          disabled={props.user.email !== article.actor.description}
-                        >
-                          Delete
-                        </DropdownItem>
-                      </DropdownMenu>
-                      
-                    )}
+                    <button
+                    onClick={() => handleDelete(article.id)}
+                    disabled={!props.user || props.user.email !== article.actor.description}
+                  >
+                    <img src="/images/bin.svg" alt="" />
+                  </button>
+
                   </SharedActor>
                   <Description>{article.description}</Description>
                   <SharedImg>
@@ -171,12 +160,14 @@ const Main = (props) => {
                     <li>
                       <button>
                         <img src="/images/like-pic.svg" alt="" />
-                        <img src="/images/clap-pic.svg" alt="" />
                         <span>{article.likes.count}</span>
                       </button>
                     </li>
                     <li>
+                      <button>
+                      <img src = "/images/comment-image.svg"/>
                       <a>{article.comments.length}</a>
+                      </button>
                     </li>
                   </SocialCounts>
                   <SocialActions>
@@ -193,11 +184,6 @@ const Main = (props) => {
                     <button onClick={() => handleShare(article)}>
                       <img src="/images/share-icon.svg" alt="" />
                       <span>Share</span>
-                    </button>
-
-                    <button>
-                      <img src="/images/send-icon.svg" alt="" />
-                      <span>Send</span>
                     </button>
                   </SocialActions>
                   {expandedArticleId === article.id && (
@@ -261,7 +247,7 @@ const Sharebox = styled(CommonCard)`
   flex-direction: column;
   color: #fff;
   margin: 0 0 8px;
-
+  
   div {
     button {
       outline: none;
@@ -274,6 +260,7 @@ const Sharebox = styled(CommonCard)`
       display: flex;
       align-items: center;
       font-weight: 600;
+      cursor: pointer;
     }
     &:first-child {
       display: flex;
@@ -338,6 +325,7 @@ const SharedActor = styled.div`
     text-decoration: none;
 
     img {
+      cursor: pointer;
       width: 48px;
       height: 48px;
     }
@@ -349,6 +337,7 @@ const SharedActor = styled.div`
       margin-left: 8px;
       overflow: hidden;
       span {
+        cursor: pointer;
         text-align: left;
         &:first-child {
           font-size: 14px;
@@ -369,40 +358,14 @@ const SharedActor = styled.div`
     background: transparent;
     border: none;
     outline: none;
+    cursor: pointer;
     img {
       width: 20px;
       height: 20px;
+      margin-top: 10px;
     }
   }
 `;
-
-const DropdownMenu = styled.div`
-  position: absolute;
-  right: 10px;
-  top: 30px;
-  background: white;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-  z-index: 1;
-`;
-
-const DropdownItem = styled.button`
-  display: block;
-  padding: 10px 20px;
-  background: white;
-  border: 3px solid  #001838;
-  text-align: left;
-  width: 100%;
-  &:hover {
-    background: #f5f5f5;
-  }
-  &:disabled {
-    color: #ccc;
-    cursor: not-allowed;
-  }
-`;
-
 
 const Description = styled.div`
   padding: 0 16px;
@@ -468,6 +431,7 @@ const SocialActions = styled.div`
     color: #001838;
     background-color: #98c5e9;
     border: none;
+    cursor: pointer;
 
     img {
       height: 30px;
