@@ -97,7 +97,7 @@ const Main = (props) => {
               onClick={handleClick}
               disabled={props.loading ? true : false}
             >
-              Start a post
+              Start post
             </button>
           </div>
           <div>

@@ -54,38 +54,8 @@ const Nav = styled.div`
   }
 `;
 
-const Join = styled.a`
-  font-size: 16px;
-  padding: 10px 12px;
-  text-decoration: none;
-  border-radius: 4px;
-  color: rgba(0, 24, 56, 0.7);
-  margin-right: 12px;
 
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.08);
-    color: rgba(0, 24, 56);
-    text-decoration: none;
-  }
-`;
 
-const SignIn = styled.a`
-  box-shadow: inset 0 0 0 1px #001838;
-  color: #001838;
-  border-radius: 24px;
-  transition-duration: 150ms;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 40px;
-  padding: 10px 24px;
-  text-align: center;
-  background-color: rgba(0, 0, 0, 0);
-
-  &:hover {
-    background-color: #98c5e9;
-    text-decoration: none;
-  }
-`;
 
 const Section = styled.section`
   display: flex;

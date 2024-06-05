@@ -7,7 +7,6 @@ import Profile from "./components/Profile";
 import ProjectCollab from "./components/ProjectCollab";
 import OtherUserProfile from "./components/OtherUserProfile";
 import EventCollab from "./components/EventCollab";
-import Message from "./components/Message";
 import NotificationsList from "./components/NotificationsList";
 
 function App() {
@@ -54,16 +53,6 @@ function App() {
               </>
             }
           />
-          <Route
-            path="/message"
-            element={
-              <>
-                <Header />
-                <Message/>
-              </>
-            }
-          />
-
           <Route
             path="/user/:email"
             element={
