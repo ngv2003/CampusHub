@@ -148,7 +148,6 @@ const ProfileCard = styled(CommonCard)`
   width: 30%;
   min-height: 475px;
   display: flex;
-  background-color:hsla(205, 15%, 62%, 0.84);
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -167,14 +166,12 @@ const ProfileCard = styled(CommonCard)`
 
 const SkillsCard = styled(CommonCard)`
   width: 30%;
-  background-color:hsla(205, 15%, 62%, 0.84);
   min-height: 475px;
 `;
 
 const CertificatesCard = styled(CommonCard)`
   width: 30%;
   min-height: 475px;
-  background-color:hsla(205, 15%, 62%, 0.84);
 
   .certificate {
     height: 100px;
