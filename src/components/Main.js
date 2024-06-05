@@ -2,15 +2,25 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import PostModal from "./PostModal";
 import { connect } from "react-redux";
-import { getArticlesAPI } from "../actions";
+import { getArticlesAPI, updateArticleLikes, addCommentAPI, deleteArticleAPI } from "../actions"; 
 import ReactPlayer from "react-player";
+import { useNavigate } from "react-router-dom";
 
 const Main = (props) => {
   const [showModal, setShowModal] = useState("close");
+  const [commentText, setCommentText] = useState("");
+  const [expandedArticleId, setExpandedArticleId] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     props.getArticles();
   }, []);
+
+  useEffect(() => {
+    if (props.querySearch) {
+      props.searchUsers(props.querySearch);
+    }
+  }, [props.querySearch]);
 
   const handleClick = (e) => {
     e.preventDefault();
@@ -29,55 +39,96 @@ const Main = (props) => {
         setShowModal("close");
     }
   };
+
+  const handleUserClick = (email) => {
+    navigate(`/user/${email}`);
+  };
+
+  const handleLike = (articleId) => {
+    if (props.user && props.user.email) {
+      props.updateArticleLikes(articleId, props.user.email);
+    }
+  };
+  
+
+  const handleCommentSubmit = (articleId) => {
+    if (props.user && props.user.email) {
+      props.addComment(articleId, commentText, props.user.email, props.user.photoURL);
+      setCommentText("");
+    }
+  };
+  
+  
+  const toggleComments = (articleId) => {
+    setExpandedArticleId(expandedArticleId === articleId ? null : articleId);
+  };
+
+
+  const handleDelete = (articleId) => {
+    props.deleteArticle(articleId);
+  };
+
+  const handleShare = (article) => {
+    if (navigator.share) {
+      navigator.share({
+        title: article.title,
+        text: article.description,
+        url: window.location.href, 
+      })
+      .then(() => console.log('Article shared successfully'))
+      .catch((error) => console.error('Error sharing article:', error));
+    } else {
+      alert('Web Share API is not supported in your browser.');
+    }
+  };
+  
+
   return (
     <>
-      {props.articles.length === 0 ? (
-        <p>There are no articles</p>
-      ) : (
-        <Container>
-          <Sharebox>
-            <div>
-              {props.user && props.user.photoURL ? (
-                <img src={props.user.photoURL} />
-              ) : (
-                <img src="/images/user.svg" alt=" " />
-              )}
-              <button
-                onClick={handleClick}
-                disabled={props.loading ? true : false}
-              >
-                Start a post
-              </button>
-            </div>
-            <div>
-              <button>
-                <img src="/images/post-photo-icon.svg" alt="" />
-                <span>Photo</span>
-              </button>
+      <Container>
+        <Sharebox>
+          <div>
+            {props.user && props.user.photoURL ? (
+              <img src={props.user.photoURL} alt="User" />
+            ) : (
+              <img src="/images/user.svg" alt="User" />
+            )}
+            <button
+              onClick={handleClick}
+              disabled={props.loading ? true : false}
+            >
+              Start a post
+            </button>
+          </div>
+          <div>
+            <button>
+              <img src="/images/post-photo-icon.svg" alt="" />
+              <span>Photo</span>
+            </button>
 
-              <button>
-                <img src="/images/post-video-icon.svg" alt="" />
-                <span>Video</span>
-              </button>
+            <button>
+              <img src="/images/post-video-icon.svg" alt="" />
+              <span>Video</span>
+            </button>
 
-              <button>
-                <img src="/images/post-event-icon.svg" alt="" />
-                <span>Event</span>
-              </button>
-
-              <button>
-                <img src="/images/post-article-icon.svg" alt="" />
-                <span>Article</span>
-              </button>
-            </div>
-          </Sharebox>
+            <button>
+              <img src="/images/post-article-icon.svg" alt="" />
+              <span>Article</span>
+            </button>
+          </div>
+        </Sharebox>
+        {props.articles.length === 0 ? (
+          <p>There are no articles</p>
+        ) : (
           <Content>
             {props.loading && <img src="/images/spin-loader.svg" />}
             {props.articles.length > 0 &&
               props.articles.map((article, key) => (
                 <Article key={key}>
                   <SharedActor>
-                    <a>
+                    <a
+                      onClick={() => handleUserClick(article.actor.description)}
+                    >
                       <img src={article.actor.image} alt="" />
                       <div>
                         <span>{article.actor.title}</span>
@@ -87,17 +138,21 @@ const Main = (props) => {
                         </span>
                       </div>
                     </a>
-                    <button>
-                      <img src="/images/ellipsis.svg" alt="" />
-                    </button>
+                    <button
+                    onClick={() => handleDelete(article.id)}
+                    disabled={!props.user || props.user.email !== article.actor.description}
+                  >
+                    <img src="/images/bin.svg" alt="" />
+                  </button>
+
                   </SharedActor>
                   <Description>{article.description}</Description>
                   <SharedImg>
                     <a>
-                      {
-                        !article.sharedImage && article.video ? <ReactPlayer width={'100%'} url={article.video}/>
-                      :
-                      (article.sharedImage && <img src={article.sharedImage}/>
+                      {!article.sharedImage && article.video ? (
+                        <ReactPlayer width={"100%"} url={article.video} />
+                      ) : (
+                        article.sharedImage && <img src={article.sharedImage} />
                       )}
                     </a>
                   </SharedImg>
@@ -105,41 +160,68 @@ const Main = (props) => {
                     <li>
                       <button>
                         <img src="/images/like-pic.svg" alt="" />
-                        <img src="/images/clap-pic.svg" alt="" />
-                        <span>75</span>
+                        <span>{article.likes.count}</span>
                       </button>
                     </li>
                     <li>
-                      <a>{article.comments}</a>
+                      <button>
+                      <img src = "/images/comment-image.svg"/>
+                      <a>{article.comments.length}</a>
+                      </button>
                     </li>
                   </SocialCounts>
                   <SocialActions>
-                    <button>
+                    <button onClick={() => handleLike(article.id)}>
                       <img src="images/like-icon.svg" alt="" />
                       <span>Like</span>
                     </button>
 
-                    <button>
+                    <button onClick={() => toggleComments(article.id)}>
                       <img src="/images/comments-icon.svg" alt="" />
                       <span>Comment</span>
                     </button>
 
-                    <button>
+                    <button onClick={() => handleShare(article)}>
                       <img src="/images/share-icon.svg" alt="" />
                       <span>Share</span>
                     </button>
-
-                    <button>
-                      <img src="/images/send-icon.svg" alt="" />
-                      <span>Send</span>
-                    </button>
                   </SocialActions>
+                  {expandedArticleId === article.id && (
+                    <CommentSection>
+                      <CommentInput>
+                        <input
+                          type="text"
+                          placeholder="Add a comment..."
+                          value={commentText}
+                          onChange={(e) => setCommentText(e.target.value)}
+                        />
+                        <button
+                          onClick={() => handleCommentSubmit(article.id)}
+                          disabled={commentText.trim() === ""}
+                        >
+                          Submit
+                        </button>
+                      </CommentInput>
+                      <CommentsList>
+                        {console.log(article.comments)}
+                        {article.comments.map((comment, index) => (
+                          <Comment key={index}>
+                          <img src={comment.userImage} onClick={() => handleUserClick(comment.userEmail)} />
+                          <div>
+                            <span onClick={() => handleUserClick(comment.userEmail)}>{comment.username}</span>
+                            <p>{comment.comment}</p>
+                          </div>
+                        </Comment>
+                        ))}
+                      </CommentsList>
+                    </CommentSection>
+                  )}
                 </Article>
               ))}
           </Content>
-          <PostModal showModal={showModal} handleClick={handleClick} />
-        </Container>
-      )}
+        )}
+        <PostModal showModal={showModal} handleClick={handleClick} />
+      </Container>
     </>
   );
 };
@@ -165,7 +247,7 @@ const Sharebox = styled(CommonCard)`
   flex-direction: column;
   color: #fff;
   margin: 0 0 8px;
-
+  
   div {
     button {
       outline: none;
@@ -178,6 +260,7 @@ const Sharebox = styled(CommonCard)`
       display: flex;
       align-items: center;
       font-weight: 600;
+      cursor: pointer;
     }
     &:first-child {
       display: flex;
@@ -234,7 +317,6 @@ const SharedActor = styled.div`
   margin-bottom: 8px;
   align-items: center;
   display: flex;
-
   a {
     margin-right: 12px;
     flex-grow: 1;
@@ -243,10 +325,10 @@ const SharedActor = styled.div`
     text-decoration: none;
 
     img {
+      cursor: pointer;
       width: 48px;
       height: 48px;
     }
-
     & > div {
       display: flex;
       flex-direction: column;
@@ -254,16 +336,14 @@ const SharedActor = styled.div`
       flex-basis: 0;
       margin-left: 8px;
       overflow: hidden;
-
       span {
+        cursor: pointer;
         text-align: left;
-
         &:first-child {
           font-size: 14px;
           font-weight: 700;
-          color: rgba(0, 0, 0, 1);
+          color: black;
         }
-
         &:nth-child(n + 1) {
           font-size: 12px;
           color: rgba(0, 0, 0, 0.6);
@@ -271,7 +351,6 @@ const SharedActor = styled.div`
       }
     }
   }
-
   button {
     position: absolute;
     right: 12px;
@@ -279,17 +358,19 @@ const SharedActor = styled.div`
     background: transparent;
     border: none;
     outline: none;
-
+    cursor: pointer;
     img {
-      width: 30px;
+      width: 20px;
+      height: 20px;
+      margin-top: 10px;
     }
   }
 `;
 
 const Description = styled.div`
-  padding: 16px;
+  padding: 0 16px;
   overflow: hidden;
-  color: rgba(0, 0, 0, 0.9);
+  color: black;
   font-size: 14px;
   text-align: left;
 `;
@@ -299,7 +380,7 @@ const SharedImg = styled.div`
   width: 100%;
   display: block;
   position: relative;
-  background-color: #98c5e9;
+  background-color: #f9fafb;
   img {
     object-fit: contain;
     width: 100%;
@@ -324,7 +405,7 @@ const SocialCounts = styled.ul`
 
     button {
       display: flex;
-      border:none;
+      border: none;
       background-color: #98c5e9;
     }
   }
@@ -338,28 +419,96 @@ const SocialCounts = styled.ul`
 const SocialActions = styled.div`
   align-items: center;
   display: flex;
+  justify-content: flex-start;
   margin: 0;
   min-height: 40px;
   padding: 4px 8px;
+
   button {
     display: inline-flex;
     align-items: center;
     padding: 8px;
     color: #001838;
-    border: 2px solid #001838;
-    border:none;
-    background-color:  #98c5e9;
+    background-color: #98c5e9;
+    border: none;
+    cursor: pointer;
 
     img {
       height: 30px;
-      padding-right: 2px;
+      padding-right: 1px;
     }
-
+    
     @media (min-width: 768px) {
       span {
         margin-left: 8px;
       }
     }
+  }
+`;
+
+const CommentSection = styled.div`
+  background-color: #98c5e9;
+  padding: 16px;
+`;
+
+const CommentInput = styled.div`
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  border-bottom: 2px solid black;
+  padding-bottom: 10px;
+  input {
+    flex: 1;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-right: 10px;
+  }
+  button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #0073b1;
+    color: white;
+    cursor: pointer;
+    &:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  }
+`;
+
+const CommentsList = styled.div`
+  margin-top: 16px;
+`;
+
+const Comment = styled.div`
+  
+  text-align: left;
+  margin-bottom: 15px;
+  display: flex;
+  div{
+    border: 3px solid #001838;
+    border-radius: 5px;
+    width: 100%;
+  }
+  img{
+    height: 40px;
+    border-radius:50%;
+    margin-right:5px;
+    margin-top:5px;
+    cursor: pointer;
+  }
+  span {
+    cursor: pointer;
+    font-weight: bold;
+    padding: 3px;
+    color: #001838;
+  }
+  p {
+    padding: 3px;
+    padding-left: 10px;
+    margin: 4px 0 0;
   }
 `;
 
@@ -375,11 +524,18 @@ const mapStateToProps = (state) => {
     loading: state.articleState.loading,
     user: state.userState.user,
     articles: state.articleState.articles,
+    searchQuery: state.searchState.searchQuery,
+    searchResults: state.searchState.searchResults,
   };
 };
 
 const mapDispatchToProps = (dispatch) => ({
   getArticles: () => dispatch(getArticlesAPI()),
+  updateArticleLikes: (articleId, userEmail) =>
+    dispatch(updateArticleLikes(articleId, userEmail)),
+  addComment: (articleId, comment, userEmail, userImage) =>
+    dispatch(addCommentAPI(articleId, comment, userEmail, userImage)),
+  deleteArticle: (articleId) => dispatch(deleteArticleAPI(articleId)), 
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Main);

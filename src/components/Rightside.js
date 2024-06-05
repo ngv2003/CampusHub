@@ -1,38 +1,63 @@
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { getEventsAPI } from "../actions";
+import { useNavigate } from "react-router-dom";
+import { connect } from "react-redux";
 
 const Rightside = (props) => {
+  const navigate = useNavigate();
+  const [todayEvents, setTodayEvents] = useState([]);
+
+  useEffect(() => {
+    if (props.user) {
+      props.getEvents();
+    }
+  }, [props.user, props.getEvents]);
+
+  useEffect(() => {
+    const today = new Date().toISOString().split("T")[0];
+    const filteredEvents = props.events.filter((event) => {
+      const eventDate = new Date(event.date).toISOString().split("T")[0];
+      return eventDate === today;
+    });
+    setTodayEvents(filteredEvents);
+  }, [props.events]);
+
+  const handleExploreEventClick = () => {
+    navigate("/events");
+  };
+
   return (
     <Container>
       <FollowCard>
         <Title>
-          <h2>Add to your club feed</h2>
+          <h2>Today's Events</h2>
           <img src="/images/feed-icon.svg" alt="" />
         </Title>
-
         <FeedList>
-          <li>
-            <a>
-              <Avatar />
-            </a>
-            <div>
-              <span>#Club 1</span>
-              <button>Follow</button>
-            </div>
-          </li>
-          <li>
-            <a>
-              <Avatar />
-            </a>
-            <div>
-              <span>#Club 2</span>
-              <button>Follow</button>
-            </div>
-          </li>
+          {todayEvents.length > 0 ? (
+            todayEvents.map((event) => (
+              <li key={event.id}>
+                <EventItem>
+                  <Avatar />
+                  <EventInfo>
+                    <EventName>{event.name}</EventName>
+                    <EventTime>{event.time}</EventTime>
+                  </EventInfo>
+                </EventItem>
+              </li>
+            ))
+          ) : (
+            <p>No events for today</p>
+          )}
         </FeedList>
-
-        <Recommendation>
-          Explore more clubs
-          <img src="/images/right-icon.svg" alt="" />
+        <Recommendation onClick={handleExploreEventClick}>
+          Explore more events
+          <img
+            src="/images/right-icon.svg"
+            alt=""
+            onClick={handleExploreEventClick}
+          />
         </Recommendation>
       </FollowCard>
     </Container>
@@ -62,7 +87,7 @@ const Title = styled.div`
   justify-content: space-between;
   font-size: 16px;
   width: 100%;
-  color: rgba(0, 0, 0, 0.6);
+  color:black;
 `;
 
 const FeedList = styled.ul`
@@ -73,38 +98,38 @@ const FeedList = styled.ul`
     margin: 12px 0;
     position: relative;
     font-size: 14px;
-    & > div {
-      display: flex;
-      flex-direction: column;
-    }
-
-    button {
-      background-color: transparent;
-      color: rgba(0, 0, 0, 0.6);
-      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.6);
-      padding: 16px;
-      align-items: center;
-      border-radius: 15px;
-      box-sizing: border-box;
-      font-weight: 600;
-      display: inline-flex;
-      justify-content: center;
-      max-height: 32px;
-      max-width: 480px;
-      text-align: center;
-      outline: none;
-    }
   }
 `;
 
+const EventItem = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const EventInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-left: 10px; 
+  margin-bottom: 10px;
+  align-items: flex-start; 
+`;
+
+const EventName = styled.span`
+  font-weight: bold;
+`;
+
+const EventTime = styled.span`
+  color: rgba(0, 0, 0, 0.6);
+`;
+
 const Avatar = styled.div`
-  background-image: url("https://static-exp1.licdn.com/sc/h/1b4vl1r54ijmrmcyxzoidwmxs");
+  background-image: url("images/today's-event.svg");
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
-  width: 48px;
-  height: 48px;
-  margin-right: 8px;
+  width: 40px;
+  height: 40px;
+  margin-right: 10px; 
 `;
 
 const Recommendation = styled.a`
@@ -112,11 +137,22 @@ const Recommendation = styled.a`
   display: flex;
   align-items: center;
   font-size: 14px;
-
+  cursor: pointer;
   img {
     height: 20px;
     width: 30px;
   }
 `;
 
-export default Rightside;
+const mapStateToProps = (state) => {
+  return {
+    events: state.eventState.events,
+    user: state.userState.user, // Add this to ensure user is properly passed
+  };
+};
+
+const mapDispatchToProps = (dispatch) => ({
+  getEvents: () => dispatch(getEventsAPI()),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Rightside);

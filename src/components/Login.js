@@ -12,8 +12,6 @@ const Login = (props) => {
           <img src="/images/campushub-logo1.svg" alt="" />
         </a>
         <div>
-          <Join>Join now</Join>
-          <SignIn>Sign in</SignIn>
         </div>
       </Nav>
       <Section>
