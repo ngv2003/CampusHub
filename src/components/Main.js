@@ -103,17 +103,17 @@ const Main = (props) => {
           <div>
             <button>
               <img src="/images/post-photo-icon.svg" alt="" />
-              <span>Photo</span>
+              <span>Photos</span>
             </button>
 
             <button>
               <img src="/images/post-video-icon.svg" alt="" />
-              <span>Video</span>
+              <span>Videos</span>
             </button>
 
             <button>
               <img src="/images/post-article-icon.svg" alt="" />
-              <span>Article</span>
+              <span>Articles</span>
             </button>
           </div>
         </Sharebox>
