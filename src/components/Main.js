@@ -75,7 +75,7 @@ const Main = (props) => {
         text: article.description,
         url: window.location.href, 
       })
-      .then(() => console.log('Article shared successfully'))
+      .then(() => console.log('Article shared successfully.'))
       .catch((error) => console.error('Error sharing article:', error));
     } else {
       alert('Web Share API is not supported in your browser.');
